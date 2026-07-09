@@ -983,7 +983,8 @@ class PayPalClientUnitTest {
 
     @OptIn(ExperimentalBetaApi::class)
     @Test
-    fun `createPaymentAuthRequest with tokenizeCallback delivers nonce via Path 2 when session exists`() = runTest(testDispatcher) {
+    fun `createPaymentAuthRequest with tokenizeCallback delivers nonce via Path 2 when session exists`() =
+        runTest(testDispatcher) {
         val expectedNonce = mockk<PayPalAccountNonce>(relaxed = true)
         val store = PendingPaymentStore().apply {
             pendingSession = PendingPaymentStore.PendingSession(
@@ -1034,7 +1035,8 @@ class PayPalClientUnitTest {
 
     @OptIn(ExperimentalBetaApi::class)
     @Test
-    fun `createPaymentAuthRequest with tokenizeCallback falls through to normal flow when session expired`() = runTest(testDispatcher) {
+    fun `createPaymentAuthRequest with tokenizeCallback falls through to normal flow when session expired`() =
+        runTest(testDispatcher) {
         val store = PendingPaymentStore().apply {
             pendingSession = PendingPaymentStore.PendingSession(
                 baToken = "BA-123",

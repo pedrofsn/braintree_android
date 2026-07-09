@@ -117,26 +117,31 @@ class PayPalLauncher internal constructor(
             }
 
             is BrowserSwitchStartResult.Started -> {
-                val event = if (isAppSwitch) {
-                    PayPalAnalytics.APP_SWITCH_SUCCEEDED
-                } else {
-                    PayPalAnalytics.BROWSER_PRESENTATION_SUCCEEDED
-                }
-                analyticsClient.sendEvent(
-                    eventName = event,
-                    analyticsEventParams = analyticsEventParams
-                )
-
-                // Store pending request string for auto-link handleReturnToApp path
-                if (pendingPaymentStore.pendingSession != null) {
-                    pendingPaymentStore.originalPendingRequestString = request.pendingRequest
-                    analyticsClient.sendEvent(
-                        PayPalAnalytics.AUTO_LINK_LAUNCH_STORED, analyticsEventParams
-                    )
-                }
-
+                sendLaunchSuccessEvent(isAppSwitch, analyticsEventParams)
+                storePendingRequestForAutoLink(request.pendingRequest, analyticsEventParams)
                 PayPalPendingRequest.Started(request.pendingRequest)
             }
+        }
+    }
+
+    private fun sendLaunchSuccessEvent(isAppSwitch: Boolean, analyticsEventParams: AnalyticsEventParams) {
+        val event = if (isAppSwitch) {
+            PayPalAnalytics.APP_SWITCH_SUCCEEDED
+        } else {
+            PayPalAnalytics.BROWSER_PRESENTATION_SUCCEEDED
+        }
+        analyticsClient.sendEvent(
+            eventName = event,
+            analyticsEventParams = analyticsEventParams
+        )
+    }
+
+    private fun storePendingRequestForAutoLink(pendingRequest: String, analyticsEventParams: AnalyticsEventParams) {
+        if (pendingPaymentStore.pendingSession != null) {
+            pendingPaymentStore.originalPendingRequestString = pendingRequest
+            analyticsClient.sendEvent(
+                PayPalAnalytics.AUTO_LINK_LAUNCH_STORED, analyticsEventParams
+            )
         }
     }
 
