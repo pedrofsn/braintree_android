@@ -1,5 +1,6 @@
 package com.braintreepayments.api.paypal
 
+import androidx.lifecycle.ProcessLifecycleOwner
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -11,12 +12,21 @@ import kotlinx.coroutines.CompletableDeferred
  * without a URL return.
  *
  * A [CompletableDeferred] ensures exactly one BTGW tokenization call is made, even when
- * multiple entry points (handle-return NoResult and user re-click) race to tokenize.
+ * multiple entry points (handle-return NoResult, user re-click, and the process-level
+ * foreground trigger) race to tokenize.
  *
  * This class must outlive individual [PayPalClient] instances because the client is
  * per-Fragment and may be GC'd during the app switch.
  */
 internal class PendingPaymentStore {
+
+    /**
+     * State machine for tracking the app switch lifecycle, driven by [AppForegroundDetector].
+     * - [IDLE]: no active app switch session
+     * - [SWITCH_LAUNCHED]: browser/app switch started, app still in foreground
+     * - [AWAITING_RETURN]: app went to background after launch, waiting for the user to return
+     */
+    enum class State { IDLE, SWITCH_LAUNCHED, AWAITING_RETURN }
 
     /**
      * Captured session data needed to tokenize a billing agreement without a URL return.
@@ -43,6 +53,9 @@ internal class PendingPaymentStore {
     }
 
     @Volatile
+    var state: State = State.IDLE
+
+    @Volatile
     var pendingSession: PendingSession? = null
 
     @Volatile
@@ -51,6 +64,12 @@ internal class PendingPaymentStore {
     /** Resolved nonce from auto-link tokenization. Volatile for safe cross-thread reads. */
     @Volatile
     var autoLinkNonce: PayPalAccountNonce? = null
+
+    /**
+     * Callback invoked by [AppForegroundDetector] when the app returns to the foreground.
+     * Set by each [PayPalClient] in its init block — always points to the latest instance.
+     */
+    var onReturnFromAppSwitch: (suspend () -> Unit)? = null
 
     /**
      * Returns an existing or newly created [CompletableDeferred] along with a flag
@@ -72,6 +91,7 @@ internal class PendingPaymentStore {
 
     /** Resets all state and cancels any in-flight deferred. */
     fun clear() {
+        state = State.IDLE
         pendingSession = null
         tokenizeDeferred?.cancel()
         tokenizeDeferred = null
@@ -82,6 +102,15 @@ internal class PendingPaymentStore {
         /** Default session TTL: 30 minutes. */
         internal const val TTL_MS = 30 * 60 * 1000L
 
-        val instance by lazy { PendingPaymentStore() }
+        val instance by lazy {
+            val store = PendingPaymentStore()
+            try {
+                ProcessLifecycleOwner.get().lifecycle.addObserver(AppForegroundDetector(store))
+            } catch (_: Exception) {
+                // ProcessLifecycleOwner unavailable — the foreground trigger is silently disabled.
+                // The handle-return NoResult and re-click paths still work independently.
+            }
+            store
+        }
     }
 }

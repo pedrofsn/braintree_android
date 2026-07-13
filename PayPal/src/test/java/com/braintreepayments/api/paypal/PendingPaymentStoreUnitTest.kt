@@ -2,6 +2,7 @@ package com.braintreepayments.api.paypal
 
 import io.mockk.mockk
 import kotlinx.coroutines.CompletableDeferred
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -20,6 +21,11 @@ class PendingPaymentStoreUnitTest {
     @Before
     fun setup() {
         sut = PendingPaymentStore()
+    }
+
+    @Test
+    fun `initial state is IDLE`() {
+        assertEquals(PendingPaymentStore.State.IDLE, sut.state)
     }
 
     @Test
@@ -80,6 +86,7 @@ class PendingPaymentStoreUnitTest {
     @Test
     fun `clear resets all state`() {
         val nonce = mockk<PayPalAccountNonce>()
+        sut.state = PendingPaymentStore.State.AWAITING_RETURN
         sut.pendingSession = PendingPaymentStore.PendingSession(
             baToken = "BA-123",
             clientMetadataId = null,
@@ -92,6 +99,7 @@ class PendingPaymentStoreUnitTest {
 
         sut.clear()
 
+        assertEquals(PendingPaymentStore.State.IDLE, sut.state)
         assertNull(sut.pendingSession)
         assertNull(sut.tokenizeDeferred)
         assertNull(sut.autoLinkNonce)
