@@ -2,6 +2,18 @@
 
 ## unreleased
 
+* PayPal
+    * Collect device information to improve PayPal app switch eligibility when it's enabled
+
+## 5.30.0 (2026-07-21)
+
+* General
+    * Remove `VisaCheckout` module. Visa Checkout is no longer supported.
+    * Deprecate `Configuration#isVisaCheckoutEnabled`, `Configuration#visaCheckoutApiKey`,
+      `Configuration#visaCheckoutExternalClientId`, and `Configuration#visaCheckoutSupportedNetworks`.
+      These will be removed in the next major version.
+* Build
+  * Drop Gradle Toolchains usage
 * AmericanExpress
     * Expose `getRewardsBalance` as a public suspend function
 * Card
@@ -31,6 +43,12 @@
 * Venmo
     * Expose `createPaymentAuthRequest` as a public suspend function
     * Expose `tokenize` as a public suspend function
+* BraintreeCore
+    * Update Android Gradle Plugin version to 8.13.2
+    * Update compileSdkVersion and targetSdkVersion to 37
+* UIComponents
+    * `PayPalButton` and `VenmoButton` now honor an explicit `layout_width`/`layout_height` or `match_parent` but defaults to the standard size for `wrap_content`
+        * Note: if your layout previously set an explicit size or `match_parent` on these buttons, the button will now render at that size
   
 ## 5.29.0 (2026-06-30)
 * GooglePay
