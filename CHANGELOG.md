@@ -4,6 +4,11 @@
 
 * PayPal
     * Collect device information to improve PayPal app switch eligibility when it's enabled
+    * Add internal `PendingPaymentStore` for auto-link on manual return
+    * Add internal `AutoLinkTokenizeUseCase` for auto-link tokenization
+    * Wire `PendingPaymentStore`/`AutoLinkTokenizeUseCase` into `PayPalClient` for auto-link on manual return (adds a new `createPaymentAuthRequest` overload accepting an optional tokenize callback for re-click support)
+    * Complete auto-link wiring in `PayPalLauncher`/`PayPalPaymentAuthResult` and the Demo app; add auto-link analytics events
+    * Add `AppForegroundDetector` for merchant-independent auto-link on manual return when the app is foregrounded (adds `androidx-lifecycle-process` dependency)
 
 ## 5.30.0 (2026-07-21)
 
@@ -28,11 +33,6 @@
 * PayPal
     * Expose `createPaymentAuthRequest` as a public suspend function
     * Expose `tokenize` as a public suspend function
-    * Add internal `PendingPaymentStore` for auto-link on manual return (no public API changes)
-    * Add internal `AutoLinkTokenizeUseCase` for auto-link tokenization (no public API changes)
-    * Wire `PendingPaymentStore`/`AutoLinkTokenizeUseCase` into `PayPalClient` for auto-link on manual return (adds a new `createPaymentAuthRequest` overload accepting an optional tokenize callback for re-click support)
-    * Complete auto-link wiring in `PayPalLauncher`/`PayPalPaymentAuthResult` and the Demo app; add auto-link analytics events
-    * Add `AppForegroundDetector` for merchant-independent auto-link on manual return when the app is foregrounded (no public API changes; adds `androidx-lifecycle-process` dependency)
 * SEPADirectDebit
     * Expose `createPaymentAuthRequest` as a public suspend function
     * Expose `tokenize` as a public suspend function

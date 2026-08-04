@@ -8,10 +8,10 @@ import kotlinx.coroutines.CompletableDeferred
  *
  * When a PayPal app switch completes but the App Link return fails, the user manually
  * switches back to the merchant app. This store persists the billing agreement token and
- * session metadata across that round trip so the SDK can tokenize directly with BTGW
- * without a URL return.
+ * session metadata across that round trip so the SDK can tokenize directly with the
+ * Braintree Gateway (BTGW) without a URL return.
  *
- * A [CompletableDeferred] ensures exactly one BTGW tokenization call is made, even when
+ * A [CompletableDeferred] ensures exactly one Braintree Gateway (BTGW) tokenization call is made, even when
  * multiple entry points (handle-return NoResult, user re-click, and the process-level
  * foreground trigger) race to tokenize.
  *
@@ -75,7 +75,7 @@ internal class PendingPaymentStore {
      * Returns an existing or newly created [CompletableDeferred] along with a flag
      * indicating whether this caller is the initiator (created the deferred).
      *
-     * The initiator is responsible for making the BTGW call and completing the deferred.
+     * The initiator is responsible for making the Braintree Gateway (BTGW) call and completing the deferred.
      * Subsequent callers receive the same deferred and should await it.
      *
      * @return pair of (deferred, isInitiator)
